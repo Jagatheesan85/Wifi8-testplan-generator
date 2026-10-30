@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEEE 802.11bn (Wi-Fi 8) Test Suite Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0fdfa', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a' },
+                        darkbg: '#0B0F19',
+                        cardbg: '#111827'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-gray-100 font-sans min-h-screen flex flex-col">
+    <header class="border-b border-gray-800 bg-cardbg/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-brand-500/10 text-brand-500 rounded-lg border border-brand-500/20">
+                    <i data-lucide="wifi" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">IEEE 802.11bn Test Architect</h1>
+                    <p class="text-xs text-gray-400">Wi-Fi 8 UHR Validation Generator</p>
+                </div>
+            </div>
+            <button onclick="exportCSV()" class="flex items-center space-x-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Export CSV</span>
+            </button>
+        </div>
+    </header>
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <aside class="space-y-4">
+            <div class="bg-cardbg border border-gray-800 rounded-xl p-4">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">IEEE 802.11bn Features</h2>
+                <div id="feature-list" class="space-y-2"></div>
+            </div>
+        </aside>
+        <section class="lg:col-span-3 space-y-4">
+            <div class="bg-cardbg border border-gray-800 rounded-xl p-5 flex justify-between items-start">
+                <div>
+                    <span id="active-clause" class="inline-block text-[10px] font-mono font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded mb-2">Clause Loading...</span>
+                    <h2 id="active-feature-title" class="text-xl font-bold text-white">Select a Feature</h2>
+                    <p id="active-feature-desc" class="text-xs text-gray-400 mt-1">Select an 802.11bn feature from the sidebar.</p>
+                </div>
+                <div class="text-right">
+                    <span id="test-count-badge" class="text-2xl font-extrabold text-brand-500">0</span>
+                    <span class="block text-[10px] text-gray-400 uppercase">Test Cases</span>
+                </div>
+            </div>
+            <div id="test-matrix" class="space-y-3"></div>
+        </section>
+    </main>
+    <script>
+        const db = {
+            "MAPC_CO_BF": {
+                "feature_name": "Multi-AP Coordinated Beamforming (MAPC Co-BF)",
+                "clause": "IEEE 802.11bn Clause 36.2.1",
+                "description": "Enables multiple coordinated APs to adjust spatial beamforming nulls to minimize inter-BSS interference.",
+                "test_cases": [
+                    {"id": "MAPC-BF-FUNC-01", "category": "Functional", "title": "Coordinated Sounding Frame Parsing & Synchronization", "steps": "1. Configure Master & Slave APs.\n2. Inject Trigger Frame.", "expected": "Slave AP correctly interprets Master AP Trigger Frame without error."},
+                    {"id": "MAPC-BF-PERF-01", "category": "Performance", "title": "Inter-BSS Interference Nulling Throughput Gain", "steps": "1. Position STA at boundary.\n2. Run concurrent TCP streams.", "expected": "Aggregate throughput increases by >= 25% via beam nulling."}
+                ]
+            },
+            "NPCA": {
+                "feature_name": "Non-Primary Channel Access (NPCA)",
+                "clause": "IEEE 802.11bn Clause 35.4.2",
+                "description": "Allows STAs/APs to dynamically transmit on clear secondary channels when primary channel is occupied.",
+                "test_cases": [
+                    {"id": "NPCA-FUNC-01", "category": "Functional", "title": "Dynamic Secondary Channel Switching Signaling", "steps": "1. Block primary 20MHz.\n2. Trigger transmission.", "expected": "AP shifts transmission header to NPCA secondary channel."}
+                ]
+            }
+        };
+
+        function init() {
+            renderSidebar();
+            loadFeature('MAPC_CO_BF');
+        }
+        function renderSidebar() {
+            const list = document.getElementById('feature-list');
+            list.innerHTML = '';
+            Object.keys(db).forEach(key => {
+                const feat = db[key];
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-3 rounded-lg border text-xs font-medium bg-gray-900/40 border-gray-800 text-gray-400 hover:border-gray-700';
+                btn.onclick = () => loadFeature(key);
+                btn.innerHTML = `<div class="font-bold text-white">${feat.feature_name}</div><div class="text-[10px] text-gray-500">${feat.clause}</div>`;
+                list.appendChild(btn);
+            });
+            lucide.createIcons();
+        }
+        function loadFeature(key) {
+            const feat = db[key];
+            document.getElementById('active-clause').innerText = feat.clause;
+            document.getElementById('active-feature-title').innerText = feat.feature_name;
+            document.getElementById('active-feature-desc').innerText = feat.description;
+            document.getElementById('test-count-badge').innerText = feat.test_cases.length;
+            const matrix = document.getElementById('test-matrix');
+            matrix.innerHTML = '';
+            feat.test_cases.forEach(tc => {
+                matrix.innerHTML += `<div class="bg-cardbg border border-gray-800 rounded-xl p-4"><span class="font-mono text-xs font-bold text-brand-400">${tc.id}</span><h4 class="text-sm font-bold text-white mt-1">${tc.title}</h4><p class="text-xs text-gray-300 mt-2"><b>Steps:</b> ${tc.steps}</p><p class="text-xs text-brand-400 mt-1"><b>Expected:</b> ${tc.expected}</p></div>`;
+            });
+        }
+        function exportCSV() { alert('CSV Export Triggered'); }
+        window.onload = init;
+    </script>
+</body>
+</html>
