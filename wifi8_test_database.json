@@ -1,0 +1,206 @@
+
+---
+
+## 2. `wifi8_test_database.json` (Specification Dataset)
+
+Save this file as `wifi8_test_database.json` in your repository root.
+
+```json
+{
+  "MAPC_CO_BF": {
+    "feature_name": "Multi-AP Coordinated Beamforming (MAPC Co-BF)",
+    "clause": "IEEE 802.11bn Clause 36.2.1",
+    "description": "Enables multiple coordinated APs to adjust spatial beamforming nulls to minimize inter-BSS co-channel interference.",
+    "test_cases": [
+      {
+        "id": "MAPC-BF-FUNC-01",
+        "category": "Functional",
+        "title": "Coordinated Sounding Frame Parsing & Master-AP Synchronization",
+        "steps": "1. Configure Master AP and Slave AP in MAPC cluster.\n2. Inject Sounding Trigger Frame.\n3. Capture Sounding Feedback from client STAs across BSSIDs.",
+        "expected": "Slave AP correctly interprets Master AP Trigger Frame; Compressed Beamforming Matrix (NDP) correctly reported without corruption."
+      },
+      {
+        "id": "MAPC-BF-PERF-01",
+        "category": "Performance",
+        "title": "Inter-BSS Interference Nulling & Throughput Gain Under Edge SNR",
+        "steps": "1. Position STA at BSS overlap boundary.\n2. Enable Co-BF between AP1 and AP2.\n3. Run simultaneous TCP DL streams on both APs.",
+        "expected": "Aggregate throughput increases by >= 25% compared to uncoordinated transmission due to beam nulling."
+      },
+      {
+        "id": "MAPC-BF-STAB-01",
+        "category": "Stability",
+        "title": "48-Hour Continuous Multi-AP Sounding Matrix Drift Test",
+        "steps": "1. Run continuous bi-directional UDP traffic across 4 coordinated APs for 48 hours.\n2. Periodically trigger CSI updates every 100ms.",
+        "expected": "Zero beamforming matrix desynchronization or AP memory leaks observed over 48 hours."
+      },
+      {
+        "id": "MAPC-BF-STR-01",
+        "category": "Stress",
+        "title": "Maximum Coordinated Client Density Null Steering Queue Limit",
+        "steps": "1. Associate 128 client MLDs across 3 Co-BF APs.\n2. Trigger simultaneous Co-BF sounding requests under 90% airtime utilization.",
+        "expected": "AP management queues process sounding frames gracefully without dropping control frames."
+      },
+      {
+        "id": "MAPC-BF-BND-01",
+        "category": "Boundary",
+        "title": "Minimum Coordinated Channel Sounding Interval Limit",
+        "steps": "1. Set Co-BF sounding trigger period to minimum standard threshold (e.g., 2ms).\n2. Inject Doppler phase noise.",
+        "expected": "AP caps sounding overhead cleanly and maintains PHY rate stability."
+      },
+      {
+        "id": "MAPC-BF-INT-01",
+        "category": "Interaction",
+        "title": "Co-BF Interoperability with Dynamic Subchannel Operation (DSO)",
+        "steps": "1. Enable Co-BF between AP1 and AP2.\n2. Trigger dynamic subchannel allocation on 80MHz secondary sub-band during active beamforming.",
+        "expected": "Nulling matrices dynamically adjust to newly allocated DSO subchannels without packet corruption."
+      }
+    ]
+  },
+  "NPCA": {
+    "feature_name": "Non-Primary Channel Access (NPCA)",
+    "clause": "IEEE 802.11bn Clause 35.4.2",
+    "description": "Allows STAs/APs to dynamically transmit on clear secondary channels when the primary channel is occupied by interference.",
+    "test_cases": [
+      {
+        "id": "NPCA-FUNC-01",
+        "category": "Functional",
+        "title": "Dynamic Secondary Channel Switching Signaling Validation",
+        "steps": "1. Inject continuous carrier energy on Primary 20MHz channel.\n2. Trigger transmission request on AP.\n3. Capture EDCA preamble on Secondary 40/80MHz channel.",
+        "expected": "AP detects primary channel busy state and shifts transmission header to NPCA secondary channel within SIFS."
+      },
+      {
+        "id": "NPCA-PERF-01",
+        "category": "Performance",
+        "title": "95th Percentile Latency Reduction Under Primary Channel Congestion",
+        "steps": "1. Saturate primary 20MHz channel with 80% background interference.\n2. Measure end-to-end latency for high-priority voice traffic with NPCA enabled vs disabled.",
+        "expected": "NPCA reduces 95th percentile latency by >= 40% under primary channel congestion."
+      },
+      {
+        "id": "NPCA-STAB-01",
+        "category": "Stability",
+        "title": "Rapid Channel Hopping Stability Under Dynamic Radar/Preamble Interference",
+        "steps": "1. Inject random burst noise on primary and secondary channels every 10ms for 12 hours.",
+        "expected": "AP maintains stable data sessions without restarting MAC firmware or dropping client associations."
+      },
+      {
+        "id": "NPCA-STR-01",
+        "category": "Stress",
+        "title": "Max Client NPCA Switching Requests Under Heavy Uplink Load",
+        "steps": "1. Connect 64 STAs with NPCA enabled.\n2. Simulate primary channel block and trigger simultaneous UL transmissions.",
+        "expected": "AP contention engine routes all 64 STAs to available secondary channels without CCA deadlock."
+      },
+      {
+        "id": "NPCA-BND-01",
+        "category": "Boundary",
+        "title": "NPCA Switching SIFS Timing Threshold Compliance",
+        "steps": "1. Measure physical delay between primary channel Busy detection and preamble start on secondary channel.",
+        "expected": "Switching time strict compliance within standard defined SIFS tolerance (+/- 1us)."
+      },
+      {
+        "id": "NPCA-INT-01",
+        "category": "Interaction",
+        "title": "NPCA Coexistence with Multi-Link Operation (MLO) Link Steering",
+        "steps": "1. Setup 2.4GHz + 5GHz + 6GHz MLD connection.\n2. Block primary channel on 5GHz link during active NPCA transmission.",
+        "expected": "MLO traffic steering coordinates with NPCA to failover to 6GHz link without packet loss."
+      }
+    ]
+  },
+  "SMD_ROAMING": {
+    "feature_name": "Seamless Mobility Domain (SMD) Roaming",
+    "clause": "IEEE 802.11bn Clause 35.8.1",
+    "description": "Provides unified context transfer across AP MLDs to ensure seamless roaming with zero packet loss.",
+    "test_cases": [
+      {
+        "id": "SMD-FUNC-01",
+        "category": "Functional",
+        "title": "SMD Key and Sequence Number Context Transfer Validation",
+        "steps": "1. Associate Client MLD to AP-MLD 1 in SMD group.\n2. Trigger roam to AP-MLD 2.\n3. Verify context transfer frame exchange over inter-AP backbone.",
+        "expected": "AP-MLD 2 receives PMKSA, frame sequence numbers, and TID state without full 802.11 re-association exchange."
+      },
+      {
+        "id": "SMD-PERF-01",
+        "category": "Performance",
+        "title": "Zero-Packet-Drop Roaming Latency (< 5ms) for Real-Time Video/Voice",
+        "steps": "1. Stream 4K video (50 Mbps) to client MLD while moving attenuator from AP1 to AP2.\n2. Measure roaming handoff gap.",
+        "expected": "Handoff gap strictly < 5ms with zero dropped audio/video frames."
+      },
+      {
+        "id": "SMD-STAB-01",
+        "category": "Stability",
+        "title": "Continuous Ping-Pong Roaming Soak Between 3 Coordinated APs",
+        "steps": "1. Attenuate client signal back and forth between AP1, AP2, and AP3 every 3 seconds for 24 hours.",
+        "expected": "Zero session drops, zero memory leaks in SMD controller cache."
+      },
+      {
+        "id": "SMD-STR-01",
+        "category": "Stress",
+        "title": "Simultaneous Mass Client Roaming Handoff in Dense SMD Network",
+        "steps": "1. Simultaneously trigger 100 client MLD roams from AP1 to AP2.",
+        "expected": "AP2 handles all 100 context imports without dropping existing active connections."
+      },
+      {
+        "id": "SMD-BND-01",
+        "category": "Boundary",
+        "title": "SMD Context Transfer Expiry Time Limit at Coverage Edge",
+        "steps": "1. Trigger roam at extreme edge (-88 dBm RSSI).\n2. Delay backbone context packet delivery.",
+        "expected": "Client gracefully falls back to fast BSS transition (802.11r) if SMD context timer expires."
+      },
+      {
+        "id": "SMD-INT-01",
+        "category": "Interaction",
+        "title": "SMD Roaming with Active Target Wake Time (TWT) Power Save",
+        "steps": "1. Establish negotiated TWT service period on AP1.\n2. Trigger SMD roam to AP2 during client TWT sleep state.",
+        "expected": "AP2 inherits client TWT schedule without waking client prematurely."
+      }
+    ]
+  },
+  "DSO": {
+    "feature_name": "Dynamic Subchannel Operation (DSO)",
+    "clause": "IEEE 802.11bn Clause 35.2.4",
+    "description": "Allows APs with wider operating bandwidths to dynamically allocate narrow dynamic dynamic subchannels to STAs on a per-TXOP basis.",
+    "test_cases": [
+      {
+        "id": "DSO-FUNC-01",
+        "category": "Functional",
+        "title": "Per-TXOP Subchannel Allocation Frame Signaling Validation",
+        "steps": "1. Associate 20MHz legacy STA to 160MHz AP.\n2. Transmit downlink frame using DSO subchannel assignment element.",
+        "expected": "STA correctly decodes assigned dynamic subchannel within 160MHz BSS bandwidth."
+      },
+      {
+        "id": "DSO-PERF-01",
+        "category": "Performance",
+        "title": "Spectral Efficiency Multiplier in Heterogeneous Bandwidth Networks",
+        "steps": "1. Connect mix of 20MHz, 40MHz, and 160MHz STAs to single AP.\n2. Measure total aggregate cell throughput with DSO enabled vs disabled.",
+        "expected": "DSO increases overall cell spectrum efficiency by >= 30% by packing narrow clients into unused sub-bands."
+      },
+      {
+        "id": "DSO-STAB-01",
+        "category": "Stability",
+        "title": "Continuous Dynamic Subchannel Re-allocation Soak Test",
+        "steps": "1. Run dynamic DSO allocation changing subchannels every 10ms across 32 clients for 24 hours.",
+        "expected": "Stable PHY synchronization with zero packet corruption."
+      },
+      {
+        "id": "DSO-STR-01",
+        "category": "Stress",
+        "title": "Max Subchannel Allocation Density Under Full Queue Load",
+        "steps": "1. Trigger simultaneous DSO requests for 16 subchannels on a 320MHz AP link.",
+        "expected": "AP scheduler allocates subchannels without allocation collision or packet queue drops."
+      },
+      {
+        "id": "DSO-BND-01",
+        "category": "Boundary",
+        "title": "Subchannel Allocation Band Edge Mask Compliance",
+        "steps": "1. Allocate DSO subchannel directly adjacent to BSS band edge.\n2. Measure spectral mask emissions on spectrum analyzer.",
+        "expected": "Adjacent channel power ratio (ACPR) stays within regulatory spectral mask limits."
+      },
+      {
+        "id": "DSO-INT-01",
+        "category": "Interaction",
+        "title": "DSO Interaction with P-EDCA Real-Time Queue Scheduler",
+        "steps": "1. Send high-priority voice traffic using P-EDCA over DSO dynamic subchannel.",
+        "expected": "P-EDCA access delay prioritized over regular DSO subchannel scheduling."
+      }
+    ]
+  }
+}
