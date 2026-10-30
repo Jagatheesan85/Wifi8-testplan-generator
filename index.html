@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IEEE 802.11bn (Wi-Fi 8) Test Suite Generator</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
@@ -22,6 +24,8 @@
     </script>
 </head>
 <body class="bg-darkbg text-gray-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
     <header class="border-b border-gray-800 bg-cardbg/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -30,88 +34,222 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">IEEE 802.11bn Test Architect</h1>
-                    <p class="text-xs text-gray-400">Wi-Fi 8 UHR Validation Generator</p>
+                    <p class="text-xs text-gray-400">Wi-Fi 8 Ultra-High Reliability (UHR) Validation Generator</p>
                 </div>
             </div>
-            <button onclick="exportCSV()" class="flex items-center space-x-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">
-                <i data-lucide="download" class="w-4 h-4"></i>
-                <span>Export CSV</span>
-            </button>
+            <div class="flex items-center space-x-3">
+                <button onclick="exportPyTest()" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">
+                    <i data-lucide="code" class="w-4 h-4"></i>
+                    <span>Export PyTest (.py)</span>
+                </button>
+                <button onclick="exportCSV()" class="flex items-center space-x-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Export CSV</span>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- Main Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        <!-- Sidebar: Feature Selector -->
         <aside class="space-y-4">
             <div class="bg-cardbg border border-gray-800 rounded-xl p-4">
-                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">IEEE 802.11bn Features</h2>
-                <div id="feature-list" class="space-y-2"></div>
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                    <span>IEEE 802.11bn Features</span>
+                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                </h2>
+                <div id="feature-list" class="space-y-2">
+                    <!-- Dynamic Feature Buttons Injected Here -->
+                </div>
+            </div>
+
+            <!-- Coverage Summary -->
+            <div class="bg-cardbg border border-gray-800 rounded-xl p-4">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Test Categories Covered</h3>
+                <ul class="text-xs space-y-1.5 text-gray-300">
+                    <li class="flex items-center text-emerald-400"><i data-lucide="check-circle" class="w-3.5 h-3.5 mr-2"></i> Functional (Spec Conformance)</li>
+                    <li class="flex items-center text-blue-400"><i data-lucide="check-circle" class="w-3.5 h-3.5 mr-2"></i> Performance (Latency/Throughput)</li>
+                    <li class="flex items-center text-purple-400"><i data-lucide="check-circle" class="w-3.5 h-3.5 mr-2"></i> Stability (Soak/Robustness)</li>
+                    <li class="flex items-center text-amber-400"><i data-lucide="check-circle" class="w-3.5 h-3.5 mr-2"></i> Stress (Queue Overload)</li>
+                    <li class="flex items-center text-rose-400"><i data-lucide="check-circle" class="w-3.5 h-3.5 mr-2"></i> Boundary (Parameter Limits)</li>
+                    <li class="flex items-center text-cyan-400"><i data-lucide="check-circle" class="w-3.5 h-3.5 mr-2"></i> Feature Interaction (Cross-MLO)</li>
+                </ul>
             </div>
         </aside>
+
+        <!-- Main Test Suite Content area -->
         <section class="lg:col-span-3 space-y-4">
+            
+            <!-- Feature Banner -->
             <div class="bg-cardbg border border-gray-800 rounded-xl p-5 flex justify-between items-start">
                 <div>
-                    <span id="active-clause" class="inline-block text-[10px] font-mono font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded mb-2">Clause Loading...</span>
+                    <span id="active-clause" class="inline-block text-[10px] font-mono font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded mb-2">
+                        Clause Loading...
+                    </span>
                     <h2 id="active-feature-title" class="text-xl font-bold text-white">Select a Feature</h2>
-                    <p id="active-feature-desc" class="text-xs text-gray-400 mt-1">Select an 802.11bn feature from the sidebar.</p>
+                    <p id="active-feature-desc" class="text-xs text-gray-400 mt-1">Select an 802.11bn specification feature from the left sidebar to generate the validation matrix.</p>
                 </div>
                 <div class="text-right">
                     <span id="test-count-badge" class="text-2xl font-extrabold text-brand-500">0</span>
                     <span class="block text-[10px] text-gray-400 uppercase">Test Cases</span>
                 </div>
             </div>
-            <div id="test-matrix" class="space-y-3"></div>
+
+            <!-- Search & Filters -->
+            <div class="flex items-center space-x-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-500"></i>
+                    <input type="text" id="search-input" onkeyup="filterTests()" placeholder="Filter test cases by title, steps, or category..." class="w-full bg-cardbg border border-gray-800 rounded-lg pl-9 pr-4 py-2 text-xs text-gray-200 focus:outline-none focus:border-brand-500">
+                </div>
+            </div>
+
+            <!-- Test Cases Matrix -->
+            <div id="test-matrix" class="space-y-3">
+                <!-- Test Cards Injected Here -->
+            </div>
+
         </section>
     </main>
-    <script>
-        const db = {
-            "MAPC_CO_BF": {
-                "feature_name": "Multi-AP Coordinated Beamforming (MAPC Co-BF)",
-                "clause": "IEEE 802.11bn Clause 36.2.1",
-                "description": "Enables multiple coordinated APs to adjust spatial beamforming nulls to minimize inter-BSS interference.",
-                "test_cases": [
-                    {"id": "MAPC-BF-FUNC-01", "category": "Functional", "title": "Coordinated Sounding Frame Parsing & Synchronization", "steps": "1. Configure Master & Slave APs.\n2. Inject Trigger Frame.", "expected": "Slave AP correctly interprets Master AP Trigger Frame without error."},
-                    {"id": "MAPC-BF-PERF-01", "category": "Performance", "title": "Inter-BSS Interference Nulling Throughput Gain", "steps": "1. Position STA at boundary.\n2. Run concurrent TCP streams.", "expected": "Aggregate throughput increases by >= 25% via beam nulling."}
-                ]
-            },
-            "NPCA": {
-                "feature_name": "Non-Primary Channel Access (NPCA)",
-                "clause": "IEEE 802.11bn Clause 35.4.2",
-                "description": "Allows STAs/APs to dynamically transmit on clear secondary channels when primary channel is occupied.",
-                "test_cases": [
-                    {"id": "NPCA-FUNC-01", "category": "Functional", "title": "Dynamic Secondary Channel Switching Signaling", "steps": "1. Block primary 20MHz.\n2. Trigger transmission.", "expected": "AP shifts transmission header to NPCA secondary channel."}
-                ]
-            }
-        };
 
-        function init() {
-            renderSidebar();
-            loadFeature('MAPC_CO_BF');
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-4 text-center text-xs text-gray-500">
+        IEEE 802.11bn (Wi-Fi 8) Test Architect Tool &bull; Created for Wireless Quality Assurance & Test Architecture
+    </footer>
+
+    <!-- Script Logic -->
+    <script>
+        let db = {};
+        let currentFeatureKey = 'MAPC_CO_BF';
+
+        // Fetch DB & Initialize
+        async function init() {
+            try {
+                const res = await fetch('wifi8_test_database.json');
+                db = await res.json();
+                renderSidebar();
+                loadFeature(currentFeatureKey);
+            } catch (err) {
+                console.error("Error loading JSON database:", err);
+            }
         }
+
         function renderSidebar() {
             const list = document.getElementById('feature-list');
             list.innerHTML = '';
             Object.keys(db).forEach(key => {
                 const feat = db[key];
                 const btn = document.createElement('button');
-                btn.className = 'w-full text-left p-3 rounded-lg border text-xs font-medium bg-gray-900/40 border-gray-800 text-gray-400 hover:border-gray-700';
+                btn.className = `w-full text-left p-3 rounded-lg border text-xs font-medium transition flex justify-between items-center ${key === currentFeatureKey ? 'bg-brand-500/10 border-brand-500/50 text-brand-400' : 'bg-gray-900/40 border-gray-800 text-gray-400 hover:border-gray-700'}`;
                 btn.onclick = () => loadFeature(key);
-                btn.innerHTML = `<div class="font-bold text-white">${feat.feature_name}</div><div class="text-[10px] text-gray-500">${feat.clause}</div>`;
+                btn.innerHTML = `
+                    <div class="truncate mr-2">
+                        <div class="font-bold truncate">${feat.feature_name}</div>
+                        <div class="text-[10px] text-gray-500">${feat.clause}</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 shrink-0"></i>
+                `;
                 list.appendChild(btn);
             });
             lucide.createIcons();
         }
+
         function loadFeature(key) {
+            currentFeatureKey = key;
+            renderSidebar();
             const feat = db[key];
             document.getElementById('active-clause').innerText = feat.clause;
             document.getElementById('active-feature-title').innerText = feat.feature_name;
             document.getElementById('active-feature-desc').innerText = feat.description;
             document.getElementById('test-count-badge').innerText = feat.test_cases.length;
+            renderTestCases(feat.test_cases);
+        }
+
+        function renderTestCases(cases) {
             const matrix = document.getElementById('test-matrix');
             matrix.innerHTML = '';
-            feat.test_cases.forEach(tc => {
-                matrix.innerHTML += `<div class="bg-cardbg border border-gray-800 rounded-xl p-4"><span class="font-mono text-xs font-bold text-brand-400">${tc.id}</span><h4 class="text-sm font-bold text-white mt-1">${tc.title}</h4><p class="text-xs text-gray-300 mt-2"><b>Steps:</b> ${tc.steps}</p><p class="text-xs text-brand-400 mt-1"><b>Expected:</b> ${tc.expected}</p></div>`;
+
+            cases.forEach(tc => {
+                const card = document.createElement('div');
+                card.className = "bg-cardbg border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition test-card";
+                
+                let badgeColor = "bg-gray-800 text-gray-300";
+                if(tc.category === "Functional") badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                if(tc.category === "Performance") badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                if(tc.category === "Stability") badgeColor = "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                if(tc.category === "Stress") badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                if(tc.category === "Boundary") badgeColor = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                if(tc.category === "Interaction") badgeColor = "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-mono text-xs font-bold text-gray-300">${tc.id}</span>
+                            <span class="text-[10px] font-semibold border px-2 py-0.5 rounded ${badgeColor}">${tc.category}</span>
+                        </div>
+                    </div>
+                    <h4 class="text-sm font-bold text-white mb-2">${tc.title}</h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="bg-gray-900/60 p-2.5 rounded border border-gray-800/80">
+                            <span class="text-gray-400 font-semibold block mb-1">Execution Steps:</span>
+                            <p class="text-gray-300 whitespace-pre-line font-mono text-[11px]">${tc.steps}</p>
+                        </div>
+                        <div class="bg-brand-950/20 p-2.5 rounded border border-brand-500/20">
+                            <span class="text-brand-400 font-semibold block mb-0.5">Expected Behavior:</span>
+                            <p class="text-gray-300">${tc.expected}</p>
+                        </div>
+                    </div>
+                `;
+                matrix.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function filterTests() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.test-card');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? 'block' : 'none';
             });
         }
-        function exportCSV() { alert('CSV Export Triggered'); }
+
+        function exportCSV() {
+            const feat = db[currentFeatureKey];
+            let csv = "Test ID,Category,Title,Execution Steps,Expected Behavior\n";
+            feat.test_cases.forEach(tc => {
+                csv += `"${tc.id}","${tc.category}","${tc.title}","${tc.steps.replace(/\n/g, ' ')}","${tc.expected}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentFeatureKey}_test_plan.csv`;
+            a.click();
+        }
+
+        function exportPyTest() {
+            const feat = db[currentFeatureKey];
+            let code = `import pytest\nimport logging\n\n"""\nAutomated PyTest Suite for ${feat.feature_name}\nSpec: ${feat.clause}\n"""\n\n`;
+            
+            feat.test_cases.forEach(tc => {
+                const funcName = tc.id.toLowerCase().replace(/-/g, '_');
+                code += `@pytest.mark.wifi8\n@pytest.mark.${tc.category.toLowerCase()}\ndef test_${funcName}(ap_controller):\n`;
+                code += `    """\n    Title: ${tc.title}\n    Expected: ${tc.expected}\n    """\n`;
+                code += `    logging.info("Executing: ${tc.id}")\n`;
+                code += `    # TODO: Implement RF attenuator and packet capture hooks\n`;
+                code += `    assert ap_controller.is_active(), "AP Controller offline"\n\n`;
+            });
+
+            const blob = new Blob([code], { type: 'text/x-python' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test_${currentFeatureKey.toLowerCase()}.py`;
+            a.click();
+        }
+
         window.onload = init;
     </script>
 </body>
