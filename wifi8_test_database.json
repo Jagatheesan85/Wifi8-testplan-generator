@@ -1,11 +1,3 @@
-
----
-
-## 2. `wifi8_test_database.json` (Specification Dataset)
-
-Save this file as `wifi8_test_database.json` in your repository root.
-
-```json
 {
   "MAPC_CO_BF": {
     "feature_name": "Multi-AP Coordinated Beamforming (MAPC Co-BF)",
